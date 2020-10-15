@@ -14,6 +14,8 @@ players.add(new newMCTSPlayer(seed, playerID++, new newMCTSParams()));
 ```
 
 In run.java file 
+
+```
 import players.newmcts.newMCTSParams;
 import players.newmcts.newMCTSPlayer;
 
@@ -27,3 +29,4 @@ case 6:
   p = new newMCTSPlayer(seed, playerID++, newmctsParam);
   playerStr[i-4] = "newMCTS";
   break;
+```
