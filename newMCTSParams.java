@@ -26,11 +26,16 @@ public class newMCTSParams implements ParameterSet {
     // Parameters
     public double K = Math.sqrt(2);
     public int rollout_depth = 8;//10;
+//    public int rollout_depth = 48;//10;
+
     public int heuristic_method = CUSTOM_HEURISTIC;
+//    public int heuristic_method = ADVANCED_HEURISTIC;
+
 
     // Budget settings
     public int stop_type = STOP_TIME;
     public int num_iterations = 200;
+//    public int num_iterations = 400;
     public int num_fmcalls = 2000;
     public int num_time = 40;
 

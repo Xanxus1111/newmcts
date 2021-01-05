@@ -112,7 +112,9 @@ public class newSingleTreeNode
                 return cur.expand(state);
 
             } else {
-                cur = cur.uct(state);
+//                cur = cur.uct(state);
+                cur = cur.ucb(state);
+//                cur = cur.ucbtuned(state);
             }
         }
 
@@ -164,7 +166,40 @@ public class newSingleTreeNode
 
     }
 
-    private newSingleTreeNode uct(GameState state) {
+//    private newSingleTreeNode uct(GameState state) {
+//        newSingleTreeNode selected = null;
+//        double bestValue = -Double.MAX_VALUE;
+//        for (newSingleTreeNode child : this.children)
+//        {
+//            double hvVal = child.totValue;
+//            double childValue =  hvVal / (child.nVisits + params.epsilon);
+//
+//            childValue = Utils.normalise(childValue, bounds[0], bounds[1]);
+//
+//            double uctValue = childValue +
+//                    params.K * Math.sqrt(Math.log(this.nVisits + 1) / (child.nVisits + params.epsilon));
+//
+//            uctValue = Utils.noise(uctValue, params.epsilon, this.m_rnd.nextDouble());     //break ties randomly
+//
+//            // small sampleRandom numbers: break ties in unexpanded nodes
+//            if (uctValue > bestValue) {
+//                selected = child;
+//                bestValue = uctValue;
+//            }
+//        }
+//        if (selected == null)
+//        {
+//            throw new RuntimeException("Warning! returning null: " + bestValue + " : " + this.children.length + " " +
+//                    + bounds[0] + " " + bounds[1]);
+//        }
+//
+//        //Roll the state:
+//        roll(state, actions[selected.childIdx]);
+//
+//        return selected;
+//    }
+
+    private newSingleTreeNode ucb(GameState state) {
         newSingleTreeNode selected = null;
         double bestValue = -Double.MAX_VALUE;
         for (newSingleTreeNode child : this.children)
@@ -174,15 +209,15 @@ public class newSingleTreeNode
 
             childValue = Utils.normalise(childValue, bounds[0], bounds[1]);
 
-            double uctValue = childValue +
-                    params.K * Math.sqrt(Math.log(this.nVisits + 1) / (child.nVisits + params.epsilon));
+            double ucbValue = childValue +
+                     Math.sqrt(Math.log(this.nVisits + 1) / (child.nVisits + params.epsilon) );
 
-            uctValue = Utils.noise(uctValue, params.epsilon, this.m_rnd.nextDouble());     //break ties randomly
+            ucbValue = Utils.noise(ucbValue, params.epsilon, this.m_rnd.nextDouble());     //break ties randomly
 
             // small sampleRandom numbers: break ties in unexpanded nodes
-            if (uctValue > bestValue) {
+            if (ucbValue > bestValue) {
                 selected = child;
-                bestValue = uctValue;
+                bestValue = ucbValue;
             }
         }
         if (selected == null)
@@ -196,6 +231,42 @@ public class newSingleTreeNode
 
         return selected;
     }
+
+    private newSingleTreeNode ucbtuned(GameState state) {
+        newSingleTreeNode selected = null;
+        double bestValue = -Double.MAX_VALUE;
+        for (newSingleTreeNode child : this.children)
+        {
+            double hvVal = child.totValue;
+            double childValue =  hvVal / (child.nVisits + params.epsilon);
+            childValue = Utils.normalise(childValue, bounds[0], bounds[1]);
+            hvVal  =Utils.normalise(hvVal, bounds[0], bounds[1]);
+
+            double Vj =  Math.pow(hvVal,2)  - Math.pow(childValue,2) + Math.sqrt(2*Math.log(this.nVisits+1)/(child.nVisits + params.epsilon));
+
+            double ucbtunedValue = childValue +
+                    Math.sqrt(Math.log(this.nVisits + 1) / (child.nVisits + params.epsilon) * Math.min(1/4,Vj));
+
+            ucbtunedValue = Utils.noise(ucbtunedValue, params.epsilon, this.m_rnd.nextDouble());     //break ties randomly
+
+            // small sampleRandom numbers: break ties in unexpanded nodes
+            if (ucbtunedValue > bestValue) {
+                selected = child;
+                bestValue = ucbtunedValue;
+            }
+        }
+        if (selected == null)
+        {
+            throw new RuntimeException("Warning! returning null: " + bestValue + " : " + this.children.length + " " +
+                    + bounds[0] + " " + bounds[1]);
+        }
+
+        //Roll the state:
+        roll(state, actions[selected.childIdx]);
+
+        return selected;
+    }
+
 
     private double rollOut(GameState state)
     {
@@ -286,7 +357,7 @@ public class newSingleTreeNode
                 }
 
                 double childValue = children[i].nVisits;
-                childValue = Utils.noise(childValue, params.epsilon, this.m_rnd.nextDouble());     //break ties randomly
+//                childValue = Utils.noise(childValue, params.epsilon, this.m_rnd.nextDouble());     //break ties randomly
                 if (childValue > bestValue) {
                     bestValue = childValue;
                     selected = i;
